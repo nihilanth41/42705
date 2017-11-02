@@ -2,6 +2,8 @@
 
 #define FALSE 0
 #define TRUE  1
+#define false 0
+#define true 1
 
 /******************************************************************************/
 /* MIPS memory layout                                                                                                                                      */
@@ -53,15 +55,15 @@ typedef struct CPU_Pipeline_Reg_Struct{
 	uint32_t imm;
 	uint32_t ALUOutput;
 	uint32_t LMD;
-    uint64_t AA;
-    uint64_t BB;
-    int RegWrite;
-    int MemRead;
-    int FLAG;
-    uint32_t RegisterRd;
-    uint32_t RegisterRs;
-    uint32_t RegisterRt;
-    int forward;
+	uint64_t AA;
+	uint64_t BB;
+	int RegWrite;
+	int MemRead;
+	int FLAG;
+	uint32_t RegisterRd;
+	uint32_t RegisterRs;
+	uint32_t RegisterRt;
+	int forward;
 	
 } CPU_Pipeline_Reg;
 
@@ -77,6 +79,8 @@ uint32_t PROGRAM_SIZE; /*in words*/
 int ENABLE_FORWARDING;
 int ForwardA;
 int ForwardB;
+int is_branch_jump;
+int branch_taken;
 
 
 /***************************************************************/

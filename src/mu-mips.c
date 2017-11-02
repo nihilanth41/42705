@@ -37,9 +37,9 @@ uint32_t mem_read_32(uint32_t address)
 		if ( (address >= MEM_REGIONS[i].begin) &&  ( address <= MEM_REGIONS[i].end) ) {
 			uint32_t offset = address - MEM_REGIONS[i].begin;
 			return (MEM_REGIONS[i].mem[offset+3] << 24) |
-					(MEM_REGIONS[i].mem[offset+2] << 16) |
-					(MEM_REGIONS[i].mem[offset+1] <<  8) |
-					(MEM_REGIONS[i].mem[offset+0] <<  0);
+				(MEM_REGIONS[i].mem[offset+2] << 16) |
+				(MEM_REGIONS[i].mem[offset+1] <<  8) |
+				(MEM_REGIONS[i].mem[offset+0] <<  0);
 		}
 	}
 	return 0;
@@ -77,7 +77,7 @@ void cycle() {
 /* Simulate MIPS for n cycles                                                                                       */
 /***************************************************************/
 void run(int num_cycles) {                                      
-	
+
 	if (RUN_FLAG == FALSE) {
 		printf("Simulation Stopped\n\n");
 		return;
@@ -232,11 +232,11 @@ void handle_command() {
 		case 'p':
 			print_program(); 
 			break;
-        case 'f':
-            if (scanf("%d", &ENABLE_FORWARDING) != 1) {
-                break;
-            }
-            ENABLE_FORWARDING == 0 ? printf("Forwarding OFF\n") : printf("Forwarding ON\n"); break;
+		case 'f':
+			if (scanf("%d", &ENABLE_FORWARDING) != 1) {
+				break;
+			}
+			ENABLE_FORWARDING == 0 ? printf("Forwarding OFF\n") : printf("Forwarding ON\n"); break;
 		default:
 			printf("Invalid Command.\n");
 			break;
@@ -254,15 +254,15 @@ void reset() {
 	}
 	CURRENT_STATE.HI = 0;
 	CURRENT_STATE.LO = 0;
-	
+
 	for (i = 0; i < NUM_MEM_REGION; i++) {
 		uint32_t region_size = MEM_REGIONS[i].end - MEM_REGIONS[i].begin + 1;
 		memset(MEM_REGIONS[i].mem, 0, region_size);
 	}
-	
+
 	/*load program*/
 	load_program();
-	
+
 	/*reset PC*/
 	INSTRUCTION_COUNT = 0;
 	CURRENT_STATE.PC =  MEM_TEXT_BEGIN;
@@ -318,7 +318,7 @@ void handle_pipeline()
 {
 	/*INSTRUCTION_COUNT should be incremented when instruction is done*/
 	/*Since we do not have branch/jump instructions, INSTRUCTION_COUNT should be incremented in WB stage */
-    
+
 	WB();
 	MEM();
 	EX();
@@ -332,240 +332,243 @@ void handle_pipeline()
 void WB()
 {
 	/*IMPLEMENT THIS*/
-    uint32_t opcode, function, rd, rt;
-    
-    opcode = (MEM_WB.IR & 0xFC000000) >> 26;
+	uint32_t opcode, function, rd, rt;
+
+	opcode = (MEM_WB.IR & 0xFC000000) >> 26;
 	function = MEM_WB.IR & 0x0000003F;
-    rt = (MEM_WB.IR & 0x001F0000) >> 16;
-    rd = (MEM_WB.IR & 0x0000F800) >> 11;
-    
-    //printf("%u\n", MEM_WB.IR);
-    
-        if(opcode == 0x00 && MEM_WB.IR != 0){
+	rt = (MEM_WB.IR & 0x001F0000) >> 16;
+	rd = (MEM_WB.IR & 0x0000F800) >> 11;
+
+	//printf("%u\n", MEM_WB.IR);
+
+	if(opcode == 0x00 && MEM_WB.IR != 0){
 		switch(function){
 			case 0x00: //SLL
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
-            case 0x01:
-                IF_EX.FLAG = TRUE;
-                INSTRUCTION_COUNT--;
-                printf("Set IF_EX.FLAG = TRUE.\n");
-                break;
+			case 0x01:
+				IF_EX.FLAG = TRUE;
+				INSTRUCTION_COUNT--;
+				printf("Set IF_EX.FLAG = TRUE.\n");
+				break;
 			case 0x02: //SRL
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x03: //SRA 
-                NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0C: //SYSCALL
-                if(MEM_WB.ALUOutput == 0xa){
+				if(MEM_WB.ALUOutput == 0xa){
 					RUN_FLAG = FALSE;
-                }
-                print_instruction(CURRENT_STATE.PC);
+				}
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x10: //MFHI
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x11: //MTHI
 				NEXT_STATE.HI = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x12: //MFLO
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x13: //MTLO
 				NEXT_STATE.LO = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x18: //MULT
-                NEXT_STATE.LO = (MEM_WB.AA & 0x00000000FFFFFFFF);
-                NEXT_STATE.HI = (MEM_WB.AA & 0XFFFFFFFF00000000) >> 32;
-                MEM_WB.RegisterRd = rd;
-                print_instruction(CURRENT_STATE.PC);
+				NEXT_STATE.LO = (MEM_WB.AA & 0x00000000FFFFFFFF);
+				NEXT_STATE.HI = (MEM_WB.AA & 0XFFFFFFFF00000000) >> 32;
+				MEM_WB.RegisterRd = rd;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x19: //MULTU
-                NEXT_STATE.LO = (MEM_WB.AA & 0x00000000FFFFFFFF);
-                NEXT_STATE.HI = (MEM_WB.AA & 0XFFFFFFFF00000000) >> 32;
-                MEM_WB.RegisterRd = rd;
-                print_instruction(CURRENT_STATE.PC);
+				NEXT_STATE.LO = (MEM_WB.AA & 0x00000000FFFFFFFF);
+				NEXT_STATE.HI = (MEM_WB.AA & 0XFFFFFFFF00000000) >> 32;
+				MEM_WB.RegisterRd = rd;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x1A: //DIV 
-                NEXT_STATE.LO = MEM_WB.ALUOutput;
-                NEXT_STATE.HI = MEM_WB.A;
-                MEM_WB.RegisterRd = rd;
-                print_instruction(CURRENT_STATE.PC);
+				NEXT_STATE.LO = MEM_WB.ALUOutput;
+				NEXT_STATE.HI = MEM_WB.A;
+				MEM_WB.RegisterRd = rd;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x1B: //DIVU
 				NEXT_STATE.LO = MEM_WB.ALUOutput;
-                NEXT_STATE.HI = MEM_WB.A;
-                MEM_WB.RegisterRd = rd;
-                print_instruction(CURRENT_STATE.PC);
+				NEXT_STATE.HI = MEM_WB.A;
+				MEM_WB.RegisterRd = rd;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x20: //ADD
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x21: //ADDU 
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x22: //SUB
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x23: //SUBU
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x24: //AND
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x25: //OR
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x26: //XOR
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x27: //NOR
 				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x2A: //SLT
-                NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
-                print_instruction(CURRENT_STATE.PC);
+				NEXT_STATE.REGS[rd] = MEM_WB.ALUOutput;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
+				print_instruction(CURRENT_STATE.PC);
 				break;
 			default:
 				printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-                INSTRUCTION_COUNT--;
+				INSTRUCTION_COUNT--;
 				break;
 		}
 	}
-    else{
+	else{
 		switch(opcode){
+			//case 0x01: 
+			case 0x02: // J 
+				branch_taken = FALSE; // Reset flag
 			case 0x08: //ADDI
 				NEXT_STATE.REGS[rt] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x09: //ADDIU
 				NEXT_STATE.REGS[rt] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0A: //SLTI
 				NEXT_STATE.REGS[rt] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0C: //ANDI
 				NEXT_STATE.REGS[rt] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0D: //ORI
 				NEXT_STATE.REGS[rt] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0E: //XORI
 				NEXT_STATE.REGS[rt] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0F: //LUI
 				NEXT_STATE.REGS[rt] = MEM_WB.ALUOutput;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x20: //LB
 				NEXT_STATE.REGS[rt] = ((MEM_WB.LMD & 0x000000FF) & 0x80) > 0 ? (MEM_WB.LMD | 0xFFFFFF00) : (MEM_WB.LMD & 0x000000FF);
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x21: //LH
 				NEXT_STATE.REGS[rt] = ((MEM_WB.LMD & 0x0000FFFF) & 0x8000) > 0 ? (MEM_WB.LMD | 0xFFFF0000) : (MEM_WB.LMD & 0x0000FFFF);
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x23: //LW
 				NEXT_STATE.REGS[rt] = MEM_WB.LMD;
-                MEM_WB.RegisterRd = rd;
-                //IF_EX.FLAG = TRUE;
+				MEM_WB.RegisterRd = rd;
+				//IF_EX.FLAG = TRUE;
 				print_instruction(CURRENT_STATE.PC);
 				break;
-            case 0x28: //SB
-                printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-                MEM_WB.RegisterRd = rd;
+			case 0x28: //SB
+				printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
 				//for count the instruction
 				print_instruction(CURRENT_STATE.PC);				
 				break;
 			case 0x29: //SH
-                printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-                MEM_WB.RegisterRd = rd;
+				printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
 				//for count the instruction
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x2B: //SW
-                printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-                MEM_WB.RegisterRd = rd;
+				printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
+				MEM_WB.RegisterRd = rd;
 				//for count the instruction
 				print_instruction(CURRENT_STATE.PC);
 				break;
 			default:
 				// put more things here
 				printf("WB at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-                INSTRUCTION_COUNT--;
+				INSTRUCTION_COUNT--;
 				break;
 		}
 	}
-    INSTRUCTION_COUNT++;
+	INSTRUCTION_COUNT++;
 }
 
 /************************************************************/
@@ -574,313 +577,317 @@ void WB()
 void MEM()
 {
 	/*IMPLEMENT THIS*/
-            if (MEM_WB.FLAG == FALSE){
-                if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == ID_IF.RegisterRs)){
-            if(ENABLE_FORWARDING == 0){
-                //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
-                IF_EX.FLAG = FALSE;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag3\n");
-                MEM_WB.IR = 0x00000001;
-            }
-            else{
-                if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == ID_IF.RegisterRs)) != 1){
-                    //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
-                    //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
-                ForwardA = 01;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag7\n");
-                }
-            }
-    }
-        if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == ID_IF.RegisterRt)){
-            if(ENABLE_FORWARDING == 0){
-                //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
-                IF_EX.FLAG = FALSE;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag4\n");
-                MEM_WB.IR = 0x00000001;
-            }
-            else{
-                if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == ID_IF.RegisterRt)) != 1){
-                    //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
-                    //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
-                ForwardB = 01;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag8\n");
-                }
-            }
-    }
-                MEM_WB.FLAG = TRUE;
-                MEM_WB.RegisterRd = 0;
-    }
-    else{
-            if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == IF_EX.RegisterRs)){
-            if(ENABLE_FORWARDING == 0){
-                //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
-                IF_EX.FLAG = FALSE;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag3\n");
-                MEM_WB.IR = 0x00000001;
-            }
-            else{
-                if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == IF_EX.RegisterRs)) != 1){
-                    //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
-                    //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
-                ForwardA = 01;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag7\n");
-                }
-            }
-    }
-        if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == IF_EX.RegisterRt)){
-            if(ENABLE_FORWARDING == 0){
-                //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
-                IF_EX.FLAG = FALSE;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag4\n");
-                MEM_WB.IR = 0x00000001;
-            }
-            else{
-                if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == IF_EX.RegisterRt)) != 1){
-                    //printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
-                    //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
-                ForwardB = 01;
-                //MEM_WB.RegisterRd = 0;
-                //printf("flag8\n");
-                }
-            }
-    }
-        MEM_WB.RegisterRd = 0;
-    }
-    
-    MEM_WB.IR = EX_MEM.IR;
-    
-    uint32_t opcode, function, data, rt, rd;
-    
-    opcode = (MEM_WB.IR & 0xFC000000) >> 26;
+	if (MEM_WB.FLAG == FALSE){
+		if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == ID_IF.RegisterRs)){
+			if(ENABLE_FORWARDING == 0){
+				//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
+				IF_EX.FLAG = FALSE;
+				//MEM_WB.RegisterRd = 0;
+				//printf("flag3\n");
+				MEM_WB.IR = 0x00000001;
+			}
+			else{
+				if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == ID_IF.RegisterRs)) != 1){
+					//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
+					//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
+					ForwardA = 01;
+					//MEM_WB.RegisterRd = 0;
+					//printf("flag7\n");
+				}
+			}
+		}
+		if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == ID_IF.RegisterRt)){
+			if(ENABLE_FORWARDING == 0){
+				//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
+				IF_EX.FLAG = FALSE;
+				//MEM_WB.RegisterRd = 0;
+				//printf("flag4\n");
+				MEM_WB.IR = 0x00000001;
+			}
+			else{
+				if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == ID_IF.RegisterRt)) != 1){
+					//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
+					//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
+					ForwardB = 01;
+					//MEM_WB.RegisterRd = 0;
+					//printf("flag8\n");
+				}
+			}
+		}
+		MEM_WB.FLAG = TRUE;
+		MEM_WB.RegisterRd = 0;
+	}
+	else{
+		if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == IF_EX.RegisterRs)){
+			if(ENABLE_FORWARDING == 0){
+				//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
+				IF_EX.FLAG = FALSE;
+				//MEM_WB.RegisterRd = 0;
+				//printf("flag3\n");
+				MEM_WB.IR = 0x00000001;
+			}
+			else{
+				if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == IF_EX.RegisterRs)) != 1){
+					//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRs:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRs);
+					//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
+					ForwardA = 01;
+					//MEM_WB.RegisterRd = 0;
+					//printf("flag7\n");
+				}
+			}
+		}
+		if (MEM_WB.RegWrite == 1 && (MEM_WB.RegisterRd != 0) && (MEM_WB.RegisterRd == IF_EX.RegisterRt)){
+			if(ENABLE_FORWARDING == 0){
+				//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
+				IF_EX.FLAG = FALSE;
+				//MEM_WB.RegisterRd = 0;
+				//printf("flag4\n");
+				MEM_WB.IR = 0x00000001;
+			}
+			else{
+				if ((EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd == IF_EX.RegisterRt)) != 1){
+					//printf("MEM_WB.RegWrite: %d MEM_WB.RegisterRd: %d IF_EX.RegisterRt:%d\n", MEM_WB.RegWrite, MEM_WB.RegisterRd, IF_EX.RegisterRt);
+					//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
+					ForwardB = 01;
+					//MEM_WB.RegisterRd = 0;
+					//printf("flag8\n");
+				}
+			}
+		}
+		MEM_WB.RegisterRd = 0;
+	}
+
+	MEM_WB.IR = EX_MEM.IR;
+
+	uint32_t opcode, function, data, rt, rd;
+
+	opcode = (MEM_WB.IR & 0xFC000000) >> 26;
 	function = MEM_WB.IR & 0x0000003F;
-    rt = (IF_EX.IR & 0x001F0000) >> 16;
+	rt = (IF_EX.IR & 0x001F0000) >> 16;
 	rd = (IF_EX.IR & 0x0000F800) >> 11;
-    
-    if(opcode == 0x00 && MEM_WB.IR != 0){
+
+	if(opcode == 0x00 && MEM_WB.IR != 0){
 		switch(function){
 			case 0x00: //SLL
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-               // print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				// print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x02: //SRL
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x03: //SRA 
-                MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0C: //SYSCALL
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-               //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x10: //MFHI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x11: //MTHI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x12: //MFLO
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x13: //MTLO
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x18: //MULT
-                MEM_WB.AA = EX_MEM.AA;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.AA = EX_MEM.AA;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x19: //MULTU
-                MEM_WB.AA = EX_MEM.AA;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.AA = EX_MEM.AA;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x1A: //DIV 
-                MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                MEM_WB.A = EX_MEM.A;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
+				MEM_WB.A = EX_MEM.A;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x1B: //DIVU
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                MEM_WB.A = EX_MEM.A;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.A = EX_MEM.A;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x20: //ADD
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x21: //ADDU 
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x22: //SUB
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x23: //SUBU
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x24: //AND
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x25: //OR
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x26: //XOR
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x27: //NOR
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x2A: //SLT
-                MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rd;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
+				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
+				//MEM_WB.RegisterRd = rd;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//print_instruction(CURRENT_STATE.PC);
 				break;
 			default:
 				printf("MEM at 0x%x is not implemented!\n", CURRENT_STATE.PC);
 				break;
 		}
 	}
-    else{
+	else{
 		switch(opcode){
+			//case 0x01:
+			case 0x02: // J
+				branch_taken = TRUE; 
+				is_branch_jump = FALSE;
 			case 0x08: //ADDI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x09: //ADDIU
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0A: //SLTI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0C: //ANDI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0D: //ORI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0E: //XORI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x0F: //LUI
 				MEM_WB.ALUOutput = EX_MEM.ALUOutput;
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x20: //LB
 				MEM_WB.LMD = mem_read_32(EX_MEM.ALUOutput);
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x21: //LH
 				MEM_WB.LMD = mem_read_32(EX_MEM.ALUOutput);
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x23: //LW
 				MEM_WB.LMD = mem_read_32(EX_MEM.ALUOutput);
-                //MEM_WB.RegisterRd = rt;
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = rt;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x28: //SB
 				data = mem_read_32( EX_MEM.ALUOutput);
 				data = (data & 0xFFFFFF00) | (EX_MEM.B & 0x000000FF);
 				mem_write_32(EX_MEM.ALUOutput, data);
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //MEM_WB.RegisterRd = 0;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = 0;
 				//print_instruction(CURRENT_STATE.PC);				
 				break;
 			case 0x29: //SH
 				data = mem_read_32( EX_MEM.ALUOutput);
 				data = (data & 0xFFFF0000) | (EX_MEM.B & 0x0000FFFF);
 				mem_write_32(EX_MEM.ALUOutput, data);
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //MEM_WB.RegisterRd = 0;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = 0;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			case 0x2B: //SW
 				mem_write_32(EX_MEM.ALUOutput, EX_MEM.B);
-                MEM_WB.RegWrite = EX_MEM.RegWrite;
-                //MEM_WB.RegisterRd = 0;
+				MEM_WB.RegWrite = EX_MEM.RegWrite;
+				//MEM_WB.RegisterRd = 0;
 				//print_instruction(CURRENT_STATE.PC);
 				break;
 			default:
 				// put more things here
 				printf("MEM at 0x%x is not implemented!\n", CURRENT_STATE.PC);
 				break;
-        }
-    }
+		}
+	}
 }
 
 /************************************************************/
@@ -889,322 +896,339 @@ void MEM()
 void EX()
 {
 	/*IMPLEMENT THIS*/
-    while(1){
-    if (EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd != 0) && (EX_MEM.RegisterRd == IF_EX.RegisterRs)){
-            if(ENABLE_FORWARDING == 0){
-                //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
-                IF_EX.FLAG = FALSE;
-                EX_MEM.FLAG = FALSE;
-                //printf("flag\n");
-                EX_MEM.IR = 0x00000001;
-                //EX_MEM.RegisterRd = 0;
-                //printf("%u\n", EX_MEM.IR);
-                //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
-            }
-            else{
-                //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
-                ForwardA = 10;
-                EX_MEM.FLAG = FALSE;
-                MEM_WB.FLAG = FALSE;
-                //EX_MEM.RegisterRd = 0;
-                //printf("flag5\n");
-                INSTRUCTION_COUNT--;
-                EX_MEM.forward = 1;
-            }
-    }
-    //else{
-        //printf("nothing\n");
-    //}
-    if (EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd != 0) && (EX_MEM.RegisterRd == IF_EX.RegisterRt)){
-            if(ENABLE_FORWARDING == 0){
-                //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
-                IF_EX.FLAG = FALSE;
-                EX_MEM.FLAG = FALSE;
-                //printf("flag2\n");
-                EX_MEM.IR = 0x00000001;
-                //EX_MEM.RegisterRd = 0;
-                //printf("%u\n", EX_MEM.IR);
-            }
-            else{
-                //printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
-                ForwardB = 10;
-                EX_MEM.FLAG = FALSE;
-                MEM_WB.FLAG = FALSE;
-                //EX_MEM.RegisterRd = 0;
-                //printf("flag6\n");
-                if (EX_MEM.forward == 0){
-                    INSTRUCTION_COUNT--;
-                }
-            }
-    }
-    //else{
-        //printf("nothing2\n");
-    //}
-        EX_MEM.forward = 0;
-        EX_MEM.RegisterRd = 0;
-        break;
-    }
-    
-    if (EX_MEM.FLAG == TRUE){
-    EX_MEM.IR = IF_EX.IR;
-    //printf("EX_MEM.IR: %u\n", EX_MEM.IR);
-    }
-        
-    uint32_t opcode, function, rt, rd;
-    uint64_t p1, p2;
-    
-    opcode = (EX_MEM.IR & 0xFC000000) >> 26;
+	while(1){
+		if (EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd != 0) && (EX_MEM.RegisterRd == IF_EX.RegisterRs)){
+			if(ENABLE_FORWARDING == 0){
+				//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
+				IF_EX.FLAG = FALSE;
+				EX_MEM.FLAG = FALSE;
+				//printf("flag\n");
+				EX_MEM.IR = 0x00000001;
+				//EX_MEM.RegisterRd = 0;
+				//printf("%u\n", EX_MEM.IR);
+				//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
+			}
+			else{
+				//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRs:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRs);
+				ForwardA = 10;
+				EX_MEM.FLAG = FALSE;
+				MEM_WB.FLAG = FALSE;
+				//EX_MEM.RegisterRd = 0;
+				//printf("flag5\n");
+				INSTRUCTION_COUNT--;
+				EX_MEM.forward = 1;
+			}
+		}
+		//else{
+		//printf("nothing\n");
+		//}
+		if (EX_MEM.RegWrite == 1 && (EX_MEM.RegisterRd != 0) && (EX_MEM.RegisterRd == IF_EX.RegisterRt)){
+			if(ENABLE_FORWARDING == 0){
+				//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
+				IF_EX.FLAG = FALSE;
+				EX_MEM.FLAG = FALSE;
+				//printf("flag2\n");
+				EX_MEM.IR = 0x00000001;
+				//EX_MEM.RegisterRd = 0;
+				//printf("%u\n", EX_MEM.IR);
+			}
+			else{
+				//printf("EX_MEM.RegWrite: %d EX_MEM.RegisterRd: %d IF_EX.RegisterRt:%d\n", EX_MEM.RegWrite, EX_MEM.RegisterRd, IF_EX.RegisterRt);
+				ForwardB = 10;
+				EX_MEM.FLAG = FALSE;
+				MEM_WB.FLAG = FALSE;
+				//EX_MEM.RegisterRd = 0;
+				//printf("flag6\n");
+				if (EX_MEM.forward == 0){
+					INSTRUCTION_COUNT--;
+				}
+			}
+		}
+		//else{
+		//printf("nothing2\n");
+		//}
+		EX_MEM.forward = 0;
+		EX_MEM.RegisterRd = 0;
+		break;
+	}
+
+	if (EX_MEM.FLAG == TRUE){
+		EX_MEM.IR = IF_EX.IR;
+		//printf("EX_MEM.IR: %u\n", EX_MEM.IR);
+	}
+
+	uint32_t opcode, function, rt, rd;
+	uint64_t p1, p2;
+
+	opcode = (EX_MEM.IR & 0xFC000000) >> 26;
 	function = EX_MEM.IR & 0x0000003F;
-    rt = (IF_EX.IR & 0x001F0000) >> 16;
+	rt = (IF_EX.IR & 0x001F0000) >> 16;
 	rd = (IF_EX.IR & 0x0000F800) >> 11;
-    
-    if(EX_MEM.FLAG == TRUE){
-    if(opcode == 0x00 && EX_MEM.IR != 0){
-		switch(function){
-			case 0x00: //SLL
-				EX_MEM.ALUOutput = IF_EX.A << IF_EX.imm;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x02: //SRL
-				EX_MEM.ALUOutput = IF_EX.A >> IF_EX.imm;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x03: //SRA 
-                if ((IF_EX.A & 0x80000000) == 1){
-                    EX_MEM.ALUOutput = ~(~IF_EX.A >> IF_EX.imm);
-                }
-                else{
-                    EX_MEM.ALUOutput = IF_EX.A >> IF_EX.imm;
-                }
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0C: //SYSCALL
-				EX_MEM.ALUOutput = IF_EX.A;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x10: //MFHI
-				EX_MEM.ALUOutput = IF_EX.A;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x11: //MTHI
-				EX_MEM.ALUOutput = IF_EX.A;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x12: //MFLO
-				EX_MEM.ALUOutput = IF_EX.A;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x13: //MTLO
-				EX_MEM.ALUOutput = IF_EX.A;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x18: //MULT
-                if ((IF_EX.A & 0x80000000) == 0x80000000){
-					p1 = 0xFFFFFFFF00000000 | IF_EX.A;
-				}else{
-					p1 = 0x00000000FFFFFFFF & IF_EX.A;
-				}
-				if ((IF_EX.B & 0x80000000) == 0x80000000){
-					p2 = 0xFFFFFFFF00000000 | IF_EX.B;
-				}else{
-					p2 = 0x00000000FFFFFFFF & IF_EX.B;
-				}
-				EX_MEM.AA = p1 * p2;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x19: //MULTU
-                EX_MEM.AA = IF_EX.A * IF_EX.B;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x1A: //DIV 
-                if (IF_EX.B != 0){
-                    EX_MEM.ALUOutput = IF_EX.A / IF_EX.B;
-                    EX_MEM.A = IF_EX.A % IF_EX.B;
-                }
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x1B: //DIVU
-				if (IF_EX.B != 0){
-                    EX_MEM.ALUOutput = IF_EX.A / IF_EX.B;
-                    EX_MEM.A = IF_EX.A % IF_EX.B;
-                }
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x20: //ADD
-				EX_MEM.ALUOutput = IF_EX.A + IF_EX.B;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x21: //ADDU 
-				EX_MEM.ALUOutput = IF_EX.A + IF_EX.B;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x22: //SUB
-				EX_MEM.ALUOutput = IF_EX.A - IF_EX.B;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x23: //SUBU
-				EX_MEM.ALUOutput = IF_EX.A - IF_EX.B;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x24: //AND
-				EX_MEM.ALUOutput = IF_EX.A & IF_EX.B;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x25: //OR
-				EX_MEM.ALUOutput = IF_EX.A | IF_EX.B;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x26: //XOR
-				EX_MEM.ALUOutput = IF_EX.A ^ IF_EX.B;
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x27: //NOR
-				EX_MEM.ALUOutput = ~(IF_EX.A | IF_EX.B);
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x2A: //SLT
-                if(IF_EX.A < IF_EX.B){
-					EX_MEM.ALUOutput = 0x1;
-				}
-				else{
-					EX_MEM.ALUOutput = 0x0;
-				}
-                EX_MEM.RegisterRd = rd;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			default:
-				printf("EX at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-				break;
+
+	if(EX_MEM.FLAG == TRUE){
+		if(opcode == 0x00 && EX_MEM.IR != 0){
+			switch(function){
+				case 0x00: //SLL
+					EX_MEM.ALUOutput = IF_EX.A << IF_EX.imm;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x02: //SRL
+					EX_MEM.ALUOutput = IF_EX.A >> IF_EX.imm;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x03: //SRA 
+					if ((IF_EX.A & 0x80000000) == 1){
+						EX_MEM.ALUOutput = ~(~IF_EX.A >> IF_EX.imm);
+					}
+					else{
+						EX_MEM.ALUOutput = IF_EX.A >> IF_EX.imm;
+					}
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0C: //SYSCALL
+					EX_MEM.ALUOutput = IF_EX.A;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x10: //MFHI
+					EX_MEM.ALUOutput = IF_EX.A;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x11: //MTHI
+					EX_MEM.ALUOutput = IF_EX.A;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x12: //MFLO
+					EX_MEM.ALUOutput = IF_EX.A;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x13: //MTLO
+					EX_MEM.ALUOutput = IF_EX.A;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x18: //MULT
+					if ((IF_EX.A & 0x80000000) == 0x80000000){
+						p1 = 0xFFFFFFFF00000000 | IF_EX.A;
+					}else{
+						p1 = 0x00000000FFFFFFFF & IF_EX.A;
+					}
+					if ((IF_EX.B & 0x80000000) == 0x80000000){
+						p2 = 0xFFFFFFFF00000000 | IF_EX.B;
+					}else{
+						p2 = 0x00000000FFFFFFFF & IF_EX.B;
+					}
+					EX_MEM.AA = p1 * p2;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x19: //MULTU
+					EX_MEM.AA = IF_EX.A * IF_EX.B;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x1A: //DIV 
+					if (IF_EX.B != 0){
+						EX_MEM.ALUOutput = IF_EX.A / IF_EX.B;
+						EX_MEM.A = IF_EX.A % IF_EX.B;
+					}
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x1B: //DIVU
+					if (IF_EX.B != 0){
+						EX_MEM.ALUOutput = IF_EX.A / IF_EX.B;
+						EX_MEM.A = IF_EX.A % IF_EX.B;
+					}
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x20: //ADD
+					EX_MEM.ALUOutput = IF_EX.A + IF_EX.B;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x21: //ADDU 
+					EX_MEM.ALUOutput = IF_EX.A + IF_EX.B;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x22: //SUB
+					EX_MEM.ALUOutput = IF_EX.A - IF_EX.B;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x23: //SUBU
+					EX_MEM.ALUOutput = IF_EX.A - IF_EX.B;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x24: //AND
+					EX_MEM.ALUOutput = IF_EX.A & IF_EX.B;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x25: //OR
+					EX_MEM.ALUOutput = IF_EX.A | IF_EX.B;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x26: //XOR
+					EX_MEM.ALUOutput = IF_EX.A ^ IF_EX.B;
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x27: //NOR
+					EX_MEM.ALUOutput = ~(IF_EX.A | IF_EX.B);
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x2A: //SLT
+					if(IF_EX.A < IF_EX.B){
+						EX_MEM.ALUOutput = 0x1;
+					}
+					else{
+						EX_MEM.ALUOutput = 0x0;
+					}
+					EX_MEM.RegisterRd = rd;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				default:
+					printf("EX at 0x%x is not implemented!\n", CURRENT_STATE.PC);
+					break;
+			}
+		}
+		else{
+			switch(opcode){
+				//case 0x01:
+				case 0x02: // J
+					CURRENT_STATE.PC = ((CURRENT_STATE.PC-4) & 0xF0000000) | (IF_EX.imm << 2);
+					is_branch_jump = TRUE; // Unset so IF fetches correct instr
+
+					break;
+				case 0x08: //ADDI
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x09: //ADDIU
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0A: //SLTI
+					if ( (  IF_EX.A - (int32_t)( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF))) < 0){
+						EX_MEM.ALUOutput = 0x1;
+					}else{
+						EX_MEM.ALUOutput = 0x0;
+					}
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0C: //ANDI
+					EX_MEM.ALUOutput = IF_EX.A & (IF_EX.imm & 0x0000FFFF);
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0D: //ORI
+					EX_MEM.ALUOutput = IF_EX.A | (IF_EX.imm & 0x0000FFFF);
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0E: //XORI
+					EX_MEM.ALUOutput = IF_EX.A ^ (IF_EX.imm & 0x0000FFFF);
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0F: //LUI
+					EX_MEM.ALUOutput = IF_EX.imm << 16;
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x20: //LB
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x21: //LH
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x23: //LW
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.RegisterRd = rt;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x28: //SB
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.B = IF_EX.B;
+					EX_MEM.RegisterRd = 0;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);				
+					break;
+				case 0x29: //SH
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.B = IF_EX.B;
+					EX_MEM.RegisterRd = 0;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x2B: //SW
+					EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
+					EX_MEM.B = IF_EX.B;
+					EX_MEM.RegisterRd = 0;
+					EX_MEM.RegWrite = IF_EX.RegWrite;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				default:
+					// put more things here
+					printf("EX at 0x%x is not implemented!\n", CURRENT_STATE.PC);
+					break;
+			}
 		}
 	}
-    else{
-		switch(opcode){
-			case 0x08: //ADDI
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x09: //ADDIU
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0A: //SLTI
-				if ( (  IF_EX.A - (int32_t)( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF))) < 0){
-					EX_MEM.ALUOutput = 0x1;
-				}else{
-					EX_MEM.ALUOutput = 0x0;
-				}
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0C: //ANDI
-				EX_MEM.ALUOutput = IF_EX.A & (IF_EX.imm & 0x0000FFFF);
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0D: //ORI
-				EX_MEM.ALUOutput = IF_EX.A | (IF_EX.imm & 0x0000FFFF);
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0E: //XORI
-				EX_MEM.ALUOutput = IF_EX.A ^ (IF_EX.imm & 0x0000FFFF);
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0F: //LUI
-				EX_MEM.ALUOutput = IF_EX.imm << 16;
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x20: //LB
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x21: //LH
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x23: //LW
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-                EX_MEM.RegisterRd = rt;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x28: //SB
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-				EX_MEM.B = IF_EX.B;
-                EX_MEM.RegisterRd = 0;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);				
-				break;
-			case 0x29: //SH
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-				EX_MEM.B = IF_EX.B;
-                EX_MEM.RegisterRd = 0;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x2B: //SW
-				EX_MEM.ALUOutput = IF_EX.A + ( (IF_EX.imm & 0x8000) > 0 ? (IF_EX.imm | 0xFFFF0000) : (IF_EX.imm & 0x0000FFFF));
-				EX_MEM.B = IF_EX.B;
-                EX_MEM.RegisterRd = 0;
-                EX_MEM.RegWrite = IF_EX.RegWrite;
-				//print_instruction(CURRENT_STATE.PC);
-				break;
-			default:
-				// put more things here
-				printf("EX at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-				break;
-		  }
-	   }
-    }
+	if(TRUE == branch_taken) { // Flush
+		EX_MEM.IR = 0;
+		EX_MEM.A = 0;
+		EX_MEM.B = 0;
+		EX_MEM.AA = 0;
+		EX_MEM.BB = 0;
+		EX_MEM.RegisterRs = 0;
+		EX_MEM.RegisterRt = 0;
+		EX_MEM.RegisterRd = 0;
+		EX_MEM.imm = 0;
+	}
 }
 
 /************************************************************/
@@ -1213,20 +1237,20 @@ void EX()
 void ID()
 {
 	/*IMPLEMENT THIS*/
-    if (ENABLE_FORWARDING == 1 && IF_EX.MemRead == 1 && ((IF_EX.RegisterRt == ID_IF.RegisterRs) || (IF_EX.RegisterRt == ID_IF.RegisterRt))){
-        IF_EX.IR = 0x00000001;
-        IF_EX.FLAG = FALSE;
-    }
-    
-    if (IF_EX.FLAG == TRUE && EX_MEM.FLAG == TRUE){
-    IF_EX.IR = ID_IF.IR;
-    //printf("IF_EX.IR: %u\n", IF_EX.IR);
-    }
-    
-    uint32_t opcode, function, rs, rt, sa, immediate;
-	
+	if (ENABLE_FORWARDING == 1 && IF_EX.MemRead == 1 && ((IF_EX.RegisterRt == ID_IF.RegisterRs) || (IF_EX.RegisterRt == ID_IF.RegisterRt))){
+		IF_EX.IR = 0x00000001;
+		IF_EX.FLAG = FALSE;
+	}
+
+	if (IF_EX.FLAG == TRUE && EX_MEM.FLAG == TRUE && (FALSE == is_branch_jump)) {
+		IF_EX.IR = ID_IF.IR;
+		//printf("IF_EX.IR: %u\n", IF_EX.IR);
+	}
+
+	uint32_t opcode, function, rs, rt, sa, immediate, target;
+
 	//printf("[0x%x]\t", CURRENT_STATE.PC);
-	
+
 	opcode = (IF_EX.IR & 0xFC000000) >> 26;
 	function = IF_EX.IR & 0x0000003F;
 	rs = (IF_EX.IR & 0x03E00000) >> 21;
@@ -1234,657 +1258,672 @@ void ID()
 	//rd = (IF_EX.IR & 0x0000F800) >> 11;
 	sa = (IF_EX.IR & 0x000007C0) >> 6;
 	immediate = IF_EX.IR & 0x0000FFFF;
-    
-    if(IF_EX.FLAG == TRUE){
-    if(opcode == 0x00 && IF_EX.IR != 0){
-		switch(function){
-			case 0x00: //SLL
-                if (ForwardB == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.imm = sa;
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x02: //SRL
-                if (ForwardB == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.imm = sa;
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = 0;
-                IF_EX.RegWrite = 1;
-               // print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x03: //SRA 
-                if (ForwardB == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.imm = sa;
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = 0;
-                IF_EX.RegWrite = 1;
-               // print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0C: //SYSCALL
-				IF_EX.A = CURRENT_STATE.REGS[2];
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x10: //MFHI
-				IF_EX.A = CURRENT_STATE.HI;
-                IF_EX.RegWrite = 1;
-               // print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x11: //MTHI
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-               // print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x12: //MFLO
-				IF_EX.A = CURRENT_STATE.LO;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x13: //MTLO
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x18: //MULT
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-               // print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x19: //MULTU
-                if (ForwardA == 10){
-                    IF_EX.AA = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.AA = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.AA = (int64_t)CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.BB = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.BB = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.BB = (int64_t)CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x1A: //DIV 
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = (int32_t)CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = (int32_t)CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x1B: //DIVU
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x20: //ADD
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x21: //ADDU 
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x22: //SUB
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x23: //SUBU
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x24: //AND
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x25: //OR
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x26: //XOR
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x27: //NOR
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x2A: //SLT
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                    IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			default:
-				printf("ID at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-				break;
+	target = IF_EX.IR & 0x03FFFFFF;
+
+	if(IF_EX.FLAG == TRUE && (FALSE == is_branch_jump) ){
+		if(opcode == 0x00 && IF_EX.IR != 0){
+			switch(function){
+				case 0x00: //SLL
+					if (ForwardB == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.imm = sa;
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x02: //SRL
+					if (ForwardB == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.imm = sa;
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = 0;
+					IF_EX.RegWrite = 1;
+					// print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x03: //SRA 
+					if (ForwardB == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.imm = sa;
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = 0;
+					IF_EX.RegWrite = 1;
+					// print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0C: //SYSCALL
+					IF_EX.A = CURRENT_STATE.REGS[2];
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x10: //MFHI
+					IF_EX.A = CURRENT_STATE.HI;
+					IF_EX.RegWrite = 1;
+					// print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x11: //MTHI
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					// print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x12: //MFLO
+					IF_EX.A = CURRENT_STATE.LO;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x13: //MTLO
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x18: //MULT
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					// print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x19: //MULTU
+					if (ForwardA == 10){
+						IF_EX.AA = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.AA = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.AA = (int64_t)CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.BB = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.BB = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.BB = (int64_t)CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x1A: //DIV 
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = (int32_t)CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = (int32_t)CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x1B: //DIVU
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x20: //ADD
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x21: //ADDU 
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x22: //SUB
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x23: //SUBU
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x24: //AND
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x25: //OR
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x26: //XOR
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x27: //NOR
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x2A: //SLT
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				default:
+					printf("ID at 0x%x is not implemented!\n", CURRENT_STATE.PC);
+					break;
+			}
+		}
+		else{
+			switch(opcode){
+				//case 0x01: { } //BLTZ/BGEZ
+				case 0x02: // J
+					IF_EX.imm = target; 
+					break;
+				case 0x08: //ADDI
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x09: //ADDIU
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0A: //SLTI
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = (int32_t)CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0C: //ANDI
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0D: //ORI
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0E: //XORI
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x0F: //LUI
+					IF_EX.imm = immediate;
+					IF_EX.RegWrite = 1;
+					IF_EX.RegisterRs = 0;
+					IF_EX.RegisterRt = 0;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x20: //LB
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					IF_EX.MemRead = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x21: //LH
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					IF_EX.MemRead = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x23: //LW
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = 0;
+					IF_EX.RegWrite = 1;
+					IF_EX.MemRead = 1;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x28: //SB
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.imm = immediate;	
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegWrite = 0;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x29: //SH
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegWrite = 0;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				case 0x2B: //SW
+					if (ForwardA == 10){
+						IF_EX.A = EX_MEM.ALUOutput;
+					}
+					else if (ForwardA == 01){
+						IF_EX.A = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.A = CURRENT_STATE.REGS[rs];
+					}
+					if (ForwardB == 10){
+						IF_EX.B = EX_MEM.ALUOutput;
+					}
+					else if (ForwardB == 01){
+						IF_EX.B = MEM_WB.ALUOutput;
+					}
+					else{
+						IF_EX.B = CURRENT_STATE.REGS[rt];
+					}
+					IF_EX.imm = immediate;
+					IF_EX.RegisterRs = rs;
+					IF_EX.RegisterRt = rt;
+					IF_EX.RegWrite = 0;
+					//print_instruction(CURRENT_STATE.PC);
+					break;
+				default:
+					// put more things here
+					printf("ID at 0x%x is not implemented!\n", CURRENT_STATE.PC);
+					break;
+			}
 		}
 	}
-    else{
-		switch(opcode){
-			case 0x08: //ADDI
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x09: //ADDIU
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0A: //SLTI
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = (int32_t)CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0C: //ANDI
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0D: //ORI
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0E: //XORI
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x0F: //LUI
-                IF_EX.imm = immediate;
-                IF_EX.RegWrite = 1;
-                IF_EX.RegisterRs = 0;
-                IF_EX.RegisterRt = 0;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x20: //LB
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                IF_EX.MemRead = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x21: //LH
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                IF_EX.MemRead = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x23: //LW
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = 0;
-                IF_EX.RegWrite = 1;
-                IF_EX.MemRead = 1;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x28: //SB
-                if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.imm = immediate;	
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegWrite = 0;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x29: //SH
-				if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegWrite = 0;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			case 0x2B: //SW
-				if (ForwardA == 10){
-                    IF_EX.A = EX_MEM.ALUOutput;
-                }
-                else if (ForwardA == 01){
-                    IF_EX.A = MEM_WB.ALUOutput;
-                }
-                else{
-				IF_EX.A = CURRENT_STATE.REGS[rs];
-                }
-                if (ForwardB == 10){
-                    IF_EX.B = EX_MEM.ALUOutput;
-                }
-                else if (ForwardB == 01){
-                    IF_EX.B = MEM_WB.ALUOutput;
-                }
-                else{
-                IF_EX.B = CURRENT_STATE.REGS[rt];
-                }
-                IF_EX.imm = immediate;
-                IF_EX.RegisterRs = rs;
-                IF_EX.RegisterRt = rt;
-                IF_EX.RegWrite = 0;
-                //print_instruction(CURRENT_STATE.PC);
-				break;
-			default:
-				// put more things here
-				printf("ID at 0x%x is not implemented!\n", CURRENT_STATE.PC);
-				break;
-		  }
-        }
-    }
+	if(TRUE == branch_taken) { // Flush
+		IF_EX.IR = 0;
+		IF_EX.A = 0;
+		IF_EX.B = 0;
+		IF_EX.AA = 0;
+		IF_EX.BB = 0;
+		IF_EX.RegisterRs = 0;
+		IF_EX.RegisterRt = 0;
+		IF_EX.imm = 0;
+	}
 }
 
 /************************************************************/
@@ -1892,31 +1931,29 @@ void ID()
 /************************************************************/
 void IF()
 {
-	/*IMPLEMENT THIS*/
-    
-    if (IF_EX.FLAG == TRUE && EX_MEM.FLAG == TRUE){
-    ID_IF.IR = mem_read_32(CURRENT_STATE.PC);
-    ID_IF.PC = CURRENT_STATE.PC + 4;
-    NEXT_STATE.PC = ID_IF.PC;
-    }
- //   else{
-  //  print_instruction(CURRENT_STATE.PC);
-    //}
-    if (ID_IF.IR == 0){
-        printf("NO INSTRUCTIONS FOR IF.\n");
-    }
-    //else{
-    //print_instruction(CURRENT_STATE.PC);
-    //}
-    if (IF_EX.FLAG == TRUE && EX_MEM.FLAG == FALSE){
-        EX_MEM.FLAG = TRUE;
-        ForwardA = 00;
-        ForwardB = 00;
-    }
-    if (IF_EX.FLAG == FALSE && EX_MEM.FLAG == TRUE){
-        IF_EX.MemRead = 0;
-    }
-    //show_pipeline();
+	if (IF_EX.FLAG == TRUE && EX_MEM.FLAG == TRUE && (FALSE == is_branch_jump) ){ // Execute as normal
+		ID_IF.IR = mem_read_32(CURRENT_STATE.PC);
+		ID_IF.PC = CURRENT_STATE.PC + 4;
+		NEXT_STATE.PC = ID_IF.PC;
+	}
+	//   else{
+	//  print_instruction(CURRENT_STATE.PC);
+	//}
+	if (ID_IF.IR == 0){
+		printf("NO INSTRUCTIONS FOR IF.\n");
+	}
+	//else{
+	//print_instruction(CURRENT_STATE.PC);
+	//}
+	if (IF_EX.FLAG == TRUE && EX_MEM.FLAG == FALSE){
+		EX_MEM.FLAG = TRUE;
+		ForwardA = 00;
+		ForwardB = 00;
+	}
+	if (IF_EX.FLAG == FALSE && EX_MEM.FLAG == TRUE){
+		IF_EX.MemRead = 0;
+	}
+	//show_pipeline();
 }
 
 
@@ -1928,16 +1965,16 @@ void initialize() {
 	CURRENT_STATE.PC = MEM_TEXT_BEGIN;
 	NEXT_STATE = CURRENT_STATE;
 	RUN_FLAG = TRUE;
-    EX_MEM.RegWrite = 1;
-    MEM_WB.RegWrite = 1;
-    IF_EX.MemRead = 0;
-    EX_MEM.FLAG = TRUE;
-    MEM_WB.FLAG = TRUE;
-    IF_EX.FLAG = TRUE;
-    ENABLE_FORWARDING = 0;
-    ForwardA = 00;
-    ForwardB = 00;
-    EX_MEM.forward = 0;
+	EX_MEM.RegWrite = 1;
+	MEM_WB.RegWrite = 1;
+	IF_EX.MemRead = 0;
+	EX_MEM.FLAG = TRUE;
+	MEM_WB.FLAG = TRUE;
+	IF_EX.FLAG = TRUE;
+	ENABLE_FORWARDING = 0;
+	ForwardA = 00;
+	ForwardB = 00;
+	EX_MEM.forward = 0;
 }
 
 /************************************************************/
@@ -1946,7 +1983,7 @@ void initialize() {
 void print_program(){
 	int i;
 	uint32_t addr;
-	
+
 	for(i=0; i<PROGRAM_SIZE; i++){
 		addr = MEM_TEXT_BEGIN + (i*4);
 		printf("[0x%x]\t", addr);
@@ -1959,9 +1996,9 @@ void print_program(){
 /************************************************************/
 void print_instruction(uint32_t addr){
 	uint32_t instruction, opcode, function, rs, rt, rd, sa, immediate, target;
-	
+
 	instruction = mem_read_32(addr);
-	
+
 	opcode = (instruction & 0xFC000000) >> 26;
 	function = instruction & 0x0000003F;
 	rs = (instruction & 0x03E00000) >> 21;
@@ -1970,10 +2007,10 @@ void print_instruction(uint32_t addr){
 	sa = (instruction & 0x000007C0) >> 6;
 	immediate = instruction & 0x0000FFFF;
 	target = instruction & 0x03FFFFFF;
-	
+
 	if(opcode == 0x00){
 		/*R format instructions here*/
-		
+
 		switch(function){
 			case 0x00:
 				printf("SLL $r%u, $r%u, 0x%x\n", rd, rt, sa);
@@ -2133,29 +2170,29 @@ void print_instruction(uint32_t addr){
 /************************************************************/
 void show_pipeline(){
 	/*IMPLEMENT THIS*/
-    printf("\nCurrent PC:[0x%x]\n", CURRENT_STATE.PC);
-    printf("ID_IF.IR:%u\n", ID_IF.IR);
-    print_instruction(ID_IF.PC - 4);
-    printf("ID_IF.PC:%u\n\n", ID_IF.PC);
-    printf("IF_EX.IR:%u\n", IF_EX.IR);
-    print_instruction(ID_IF.PC - 8);
-    printf("IF_EX.A:%u\n", IF_EX.A);
-    printf("IF_EX.B:%u\n", IF_EX.B);
-    //printf("IF_EX.RegisterRs:%d\n\n", IF_EX.RegisterRs);
-    //printf("IF_EX.RegisterRt:%d\n\n", IF_EX.RegisterRt);
-    printf("IF_EX.imm:%u\n\n", IF_EX.imm);
-    printf("EX_MEM.IR:%u\n", EX_MEM.IR);
-    print_instruction(ID_IF.PC - 12);
-    printf("EX_MEM.A:%u\n", EX_MEM.A);
-    printf("EX_MEM.B:%u\n", EX_MEM.B);
-    printf("EX_MEM.ALUOutput:%u\n\n", EX_MEM.ALUOutput);
-    //printf("EX_MEM.RegisterRd:%d\n\n", EX_MEM.RegisterRd);
-    printf("MEM_WB.IR:%u\n", MEM_WB.IR);
-    print_instruction(ID_IF.PC - 16);
-    printf("MEM_WB.ALUOutput:%u\n", MEM_WB.ALUOutput);
-    printf("MEM_WB.LMD:%u\n", MEM_WB.LMD);
-    //printf("MEM_WB.RegisterRd:%d\n\n", MEM_WB.RegisterRd);
-    printf("CYCLE %u\n", CYCLE_COUNT);
+	printf("\nCurrent PC:[0x%x]\n", CURRENT_STATE.PC);
+	printf("ID_IF.IR:%u\n", ID_IF.IR);
+	print_instruction(ID_IF.PC - 4);
+	printf("ID_IF.PC:%u\n\n", ID_IF.PC);
+	printf("IF_EX.IR:%u\n", IF_EX.IR);
+	print_instruction(ID_IF.PC - 8);
+	printf("IF_EX.A:%u\n", IF_EX.A);
+	printf("IF_EX.B:%u\n", IF_EX.B);
+	//printf("IF_EX.RegisterRs:%d\n\n", IF_EX.RegisterRs);
+	//printf("IF_EX.RegisterRt:%d\n\n", IF_EX.RegisterRt);
+	printf("IF_EX.imm:%u\n\n", IF_EX.imm);
+	printf("EX_MEM.IR:%u\n", EX_MEM.IR);
+	print_instruction(ID_IF.PC - 12);
+	printf("EX_MEM.A:%u\n", EX_MEM.A);
+	printf("EX_MEM.B:%u\n", EX_MEM.B);
+	printf("EX_MEM.ALUOutput:%u\n\n", EX_MEM.ALUOutput);
+	//printf("EX_MEM.RegisterRd:%d\n\n", EX_MEM.RegisterRd);
+	printf("MEM_WB.IR:%u\n", MEM_WB.IR);
+	print_instruction(ID_IF.PC - 16);
+	printf("MEM_WB.ALUOutput:%u\n", MEM_WB.ALUOutput);
+	printf("MEM_WB.LMD:%u\n", MEM_WB.LMD);
+	//printf("MEM_WB.RegisterRd:%d\n\n", MEM_WB.RegisterRd);
+	printf("CYCLE %u\n", CYCLE_COUNT);
 }
 
 /***************************************************************/
@@ -2165,7 +2202,7 @@ int main(int argc, char *argv[]) {
 	printf("\n**************************\n");
 	printf("Welcome to MU-MIPS SIM...\n");
 	printf("**************************\n\n");
-	
+
 	if (argc < 2) {
 		printf("Error: You should provide input file.\nUsage: %s <input program> \n\n",  argv[0]);
 		exit(1);
